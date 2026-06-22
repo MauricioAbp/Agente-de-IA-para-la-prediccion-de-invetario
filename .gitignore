@@ -1,0 +1,18 @@
+# Entorno Virtual
+venv/
+.venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de configuración del IDE
+.vscode/
+.idea/
+
+# Datos masivos pesados (Opcional, pero recomendado si el .xlsx es gigante)
+# Si deseas subir el archivo de Kaggle para que tu profesora lo vea, borra la línea de abajo:
+# Coffee Shop Sales.xlsx
