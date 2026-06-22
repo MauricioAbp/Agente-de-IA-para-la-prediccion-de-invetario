@@ -34,6 +34,13 @@ La solución se estructura mediante componentes desacoplados:
 ├── q_table.json                 # Matriz de conocimiento serializada
 └── .gitignore                   # Exclusión de archivos del entorno virtual y caché
 
+```
+
+## 🔬 4. Modelo Matemático
+
+La actualización de la política óptima de abastecimiento se realiza mediante **Aprendizaje por Refuerzo**, utilizando la ecuación fundamental de diferencias temporales basada en la ecuación de Bellman. Esta expresión permite que el agente aprenda progresivamente a maximizar la recompensa esperada a partir de la experiencia obtenida durante las simulaciones.
+
+
 ## 🔬 4. Modelo Matemático
 
 La actualización de la política óptima de abastecimiento se realiza mediante **Aprendizaje por Refuerzo**, utilizando la ecuación fundamental de diferencias temporales basada en la ecuación de Bellman. Esta expresión permite que el agente aprenda progresivamente a maximizar la recompensa esperada a partir de la experiencia obtenida durante las simulaciones.
