@@ -1,0 +1,50 @@
+services:
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env                        # ← todas las variables desde .env
+    environment:
+      DB_HOST:                          # sobreescribe localhost por el nombre del servicio
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - q_table_data:/app/q_table_backups # backups persisten entre reinicios
+      - ./q_table.json:/app/q_table.json  # q_table principal compartida con el host
+    depends_on:
+      db:
+        condition: service_healthy
+
+  agente:
+    build: .
+    env_file: .env
+    environment:
+      DB_HOST: db
+    volumes:
+      - q_table_data:/app/q_table_backups
+      - ./q_table.json:/app/q_table.json
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python agente_bellman.py
+    profiles: ["train"]                   # Solo corre con: docker compose --profile train up agente
+
+volumes:
+  mysql_data:
+  q_table_data:
