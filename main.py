@@ -54,70 +54,630 @@ class PeticionInventario(BaseModel):
 async def interfaz_grafica():
     return """
     <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Dashboard Optimización</title>
-        <style>
-            body { font-family: 'Segoe UI', sans-serif; background:#f4f6f9; margin:40px; }
-            .card { background:white; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05); max-width:500px; margin:auto; }
-            h2 { color:#2c3e50; text-align:center; }
-            .form-group { margin-bottom:20px; }
-            label { display:block; margin-bottom:8px; font-weight:bold; color:#34495e; }
-            input, select { width:100%; padding:10px; border:1px solid #ccd1d9; border-radius:6px; box-sizing:border-box; }
-            button { width:100%; padding:12px; background:#2ecc71; color:white; border:none; border-radius:6px; font-size:16px; cursor:pointer; font-weight:bold; }
-            button:hover { background:#27ae60; }
-            .result-box { margin-top:25px; padding:15px; border-radius:6px; display:none; background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h2>📦 Dashboard de Inventarios (RL)</h2>
-            <div class="form-group">
-                <label>Stock Actual:</label>
-                <input type="number" id="stock" value="30">
-            </div>
-            <div class="form-group">
-                <label>Día de la Semana:</label>
-                <select id="dia">
-                    <option value="lunes">Lunes</option>
-                    <option value="martes">Martes</option>
-                    <option value="miercoles">Miércoles</option>
-                    <option value="jueves">Jueves</option>
-                    <option value="viernes">Viernes</option>
-                    <option value="sabado">Sábado</option>
-                    <option value="domingo">Domingo</option>
-                </select>
-            </div>
-            <button onclick="consultarAgente()">Consultar Decisión Óptima</button>
-            <div id="resultado" class="result-box">
-                <p><strong>Unidades a comprar:</strong> <span id="res-unidades"></span></p>
-                <p><strong>Valor Q (Bellman):</strong> <span id="res-q"></span></p>
-                <small id="res-nota" style="display:block;margin-top:10px;font-weight:500;"></small>
-            </div>
-        </div>
-        <script>
-            async function consultarAgente() {
-                const stock = parseInt(document.getElementById('stock').value);
-                const dia   = document.getElementById('dia').value;
-                const res   = await fetch('/prediccion', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({stock_actual: stock, dia_semana: dia})
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById('res-unidades').innerText = data.decision_abastecimiento.unidades_a_solicitar;
-                    document.getElementById('res-q').innerText        = data.metadatos.valor_q_maximo;
-                    document.getElementById('res-nota').innerText     = data.decision_abastecimiento.impacto_esperado;
-                    document.getElementById('resultado').style.display = 'block';
-                } else {
-                    alert('Error al consultar al agente.');
-                }
-            }
-        </script>
-    </body>
-    </html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sistema Inteligente de Inventarios</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+background:linear-gradient(135deg,#0f172a,#1d4ed8,#38bdf8);
+
+min-height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+padding:30px;
+
+}
+
+.container{
+
+width:100%;
+max-width:1100px;
+
+display:grid;
+
+grid-template-columns:420px 1fr;
+
+gap:30px;
+
+}
+
+.card{
+
+background:rgba(255,255,255,.13);
+
+backdrop-filter:blur(20px);
+
+border:1px solid rgba(255,255,255,.15);
+
+border-radius:22px;
+
+padding:30px;
+
+box-shadow:0 20px 45px rgba(0,0,0,.25);
+
+color:white;
+
+}
+select{
+    position: relative;
+    z-index: 1000;
+}
+.form-group{
+    position: relative;
+    z-index: 1000;
+}
+
+.logo{
+
+font-size:55px;
+
+text-align:center;
+
+margin-bottom:10px;
+
+}
+
+h1{
+
+font-size:28px;
+
+text-align:center;
+
+font-weight:700;
+
+}
+
+.subtitle{
+
+text-align:center;
+
+margin-top:10px;
+
+opacity:.8;
+
+font-size:14px;
+
+margin-bottom:35px;
+
+}
+
+.form-group{
+
+margin-bottom:22px;
+
+}
+
+label{
+
+display:block;
+
+margin-bottom:8px;
+
+font-weight:600;
+
+}
+
+input,select{
+
+width:100%;
+
+padding:14px;
+
+border:none;
+
+outline:none;
+
+border-radius:12px;
+
+font-size:15px;
+
+background:white;
+
+}
+
+button{
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:14px;
+
+cursor:pointer;
+
+font-size:17px;
+
+font-weight:600;
+
+background:linear-gradient(90deg,#06b6d4,#22c55e);
+
+color:white;
+
+transition:.3s;
+
+}
+
+button:hover{
+
+transform:translateY(-2px);
+
+box-shadow:0 10px 20px rgba(0,0,0,.2);
+
+}
+
+.dashboard{
+
+display:flex;
+
+flex-direction:column;
+
+gap:20px;
+
+}
+
+.cards{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:20px;
+
+}
+
+.info{
+
+background:white;
+
+color:#111827;
+
+border-radius:18px;
+
+padding:25px;
+
+text-align:center;
+
+box-shadow:0 8px 25px rgba(0,0,0,.12);
+
+transition:.25s;
+
+}
+
+.info:hover{
+
+transform:translateY(-5px);
+
+}
+
+.icon{
+
+font-size:35px;
+
+margin-bottom:10px;
+
+}
+
+.title{
+
+font-size:14px;
+
+color:#6b7280;
+
+margin-bottom:10px;
+
+}
+
+.value{
+
+font-size:30px;
+
+font-weight:700;
+
+color:#2563eb;
+
+}
+
+.result{
+
+background:white;
+
+border-radius:18px;
+
+padding:25px;
+
+display:none;
+
+animation:fade .5s;
+
+}
+
+@keyframes fade{
+
+from{
+
+opacity:0;
+
+transform:translateY(15px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+}
+
+.result h2{
+
+color:#111827;
+
+margin-bottom:20px;
+
+}
+
+.status{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+margin-top:20px;
+
+}
+
+.circle{
+
+width:18px;
+
+height:18px;
+
+border-radius:50%;
+
+background:#22c55e;
+
+box-shadow:0 0 12px #22c55e;
+
+}
+
+.progress{
+
+height:14px;
+
+background:#e5e7eb;
+
+border-radius:30px;
+
+overflow:hidden;
+
+margin-top:15px;
+
+}
+
+.progress{
+
+    height:14px;
+    background:#e5e7eb;
+    border-radius:30px;
+    overflow:hidden;
+    margin-top:15px;
+
+}
+
+#barra-q{
+
+    height:100%;
+    width:0%;
+    transition:width .6s ease, background .4s ease;
+    background:linear-gradient(90deg,#06b6d4,#22c55e);
+
+}
+
+.note{
+
+margin-top:18px;
+
+line-height:1.7;
+
+color:#374151;
+
+}
+
+.footer{
+
+margin-top:30px;
+
+font-size:13px;
+
+color:#94a3b8;
+
+text-align:center;
+
+}
+
+.loading{
+
+display:none;
+
+text-align:center;
+
+color:white;
+
+margin-top:20px;
+
+font-weight:600;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<div class="logo">🤖</div>
+
+<h1>Sistema Inteligente de Inventarios</h1>
+
+<div class="subtitle">
+Aprendizaje por Refuerzo • Q-Learning • Bellman
+</div>
+
+<div class="form-group">
+
+<label>📦 Stock actual</label>
+
+<input
+type="number"
+id="stock"
+value="30">
+
+</div>
+
+<div class="form-group">
+
+<label>📅 Día de la semana</label>
+
+<select id="dia">
+
+<option value="lunes">Lunes</option>
+<option value="martes">Martes</option>
+<option value="miercoles">Miércoles</option>
+<option value="jueves">Jueves</option>
+<option value="viernes">Viernes</option>
+<option value="sabado">Sábado</option>
+<option value="domingo">Domingo</option>
+
+</select>
+
+</div>
+
+<button onclick="consultarAgente()">
+
+Analizar Inventario
+
+</button>
+
+<div class="loading" id="loading">
+
+⏳ Analizando con el agente inteligente...
+
+</div>
+
+<div class="footer">
+
+FastAPI • HTML5 • Reinforcement Learning
+
+</div>
+
+</div>
+
+<div class="dashboard">
+
+<div class="cards">
+
+<div class="info">
+
+<div class="icon">📦</div>
+
+<div class="title">
+
+Unidades recomendadas
+
+</div>
+
+<div
+class="value"
+id="res-unidades">
+
+--
+
+</div>
+
+</div>
+
+<div class="info">
+
+<div class="icon">📈</div>
+
+<div class="title">
+
+Valor Q
+
+</div>
+
+<div
+class="value"
+id="res-q">
+
+--
+
+</div>
+
+</div>
+
+</div>
+
+<div
+class="result"
+id="resultado">
+
+<h2>
+
+🤖 Evaluación del Agente Inteligente
+
+</h2>
+
+<p style="color:#6b7280; font-size:13px; margin-bottom:6px;">📊 Nivel de stock actual</p>
+<div class="progress">
+    <div id="barra-q"></div>
+</div>
+<p id="label-stock" style="font-size:12px; color:#6b7280; margin-top:5px; text-align:right;"></p>
+
+<div class="status">
+
+<div class="circle"></div>
+
+<strong>
+
+Estado óptimo encontrado
+
+</strong>
+
+</div>
+
+<div
+class="note"
+id="res-nota">
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+async function consultarAgente(){
+
+document.getElementById("loading").style.display="block";
+
+document.getElementById("resultado").style.display="none";
+
+const stock=parseInt(document.getElementById("stock").value);
+
+const dia=document.getElementById("dia").value;
+
+try{
+
+const res=await fetch('/prediccion',{
+
+method:'POST',
+
+headers:{'Content-Type':'application/json'},
+
+body:JSON.stringify({
+
+stock_actual:stock,
+
+dia_semana:dia
+
+})
+
+});
+
+if(res.ok){
+
+const data = await res.json();
+
+const q = Number(data.metadatos.valor_q_maximo);
+
+document.getElementById("res-unidades").innerText =
+data.decision_abastecimiento.unidades_a_solicitar;
+
+document.getElementById("res-q").innerText =
+q.toFixed(4);
+
+const barra = document.getElementById("barra-q");
+const STOCK_MAX = 100;
+const porcentaje = Math.min(100, Math.round((stock / STOCK_MAX) * 100));
+barra.style.width = porcentaje + "%";
+
+if(porcentaje >= 60){
+    barra.style.background = "#22c55e";
+    document.getElementById("label-stock").innerText = "Stock alto ✅";
+}else if(porcentaje >= 25){
+    barra.style.background = "#f59e0b";
+    document.getElementById("label-stock").innerText = "Stock normal ⚠️";
+}else if(porcentaje > 0){
+    barra.style.background = "#ef4444";
+    document.getElementById("label-stock").innerText = "Stock bajo 🔴";
+}else{
+    barra.style.background = "#ef4444";
+    barra.style.width = "3%";
+    document.getElementById("label-stock").innerText = "Sin stock 🚨";
+}
+
+document.getElementById("res-nota").innerHTML =
+"<strong>Impacto esperado:</strong><br>" +
+data.decision_abastecimiento.impacto_esperado;
+
+document.getElementById("resultado").style.display = "block";
+
+}else{
+
+alert("Error al consultar el agente.");
+
+}
+
+}catch{
+
+alert("No fue posible conectar con la API.");
+
+}
+
+document.getElementById("loading").style.display="none";
+
+}
+
+</script>
+
+</body>
+</html>
     """
 
 
@@ -148,7 +708,10 @@ async def obtener_recomendacion(datos: PeticionInventario):
         segunda_mejor_cant = ACCIONES_POSIBLES[segunda_mejor_idx]
         diferencia_q       = round(valores_q[accion_optima_idx] - valores_q[segunda_mejor_idx], 2)
         nivel_stock        = "crítico" if datos.stock_actual == 0 else "bajo" if datos.stock_actual < 20 else "normal" if datos.stock_actual < 60 else "alto"
-        confianza_pct      = min(100, round(abs(diferencia_q) / (abs(valores_q[accion_optima_idx]) + 1) * 100, 1))
+       # Normaliza la diferencia relativa entre la mejor y segunda mejor acción
+        todos_q = sorted(valores_q, reverse=True)
+        rango = abs(todos_q[0] - todos_q[-1])
+        confianza_pct = min(100, round((abs(diferencia_q) / (rango + 1)) * 100, 1)) if rango > 0 else 0
         explicacion = (
             f"Con stock {nivel_stock} ({datos.stock_actual} unidades) un {NOMBRES_DIAS[dia_idx]}, "
             f"el agente recomienda {NOMBRES_ACCIONES[cantidad_a_comprar]}. "
@@ -156,16 +719,26 @@ async def obtener_recomendacion(datos: PeticionInventario):
             f"Nivel de confianza en la decisión: {confianza_pct}%."
         )
     else:
-        cantidad_a_comprar = 10
+        if datos.stock_actual <= 10:
+            cantidad_a_comprar = 70
+        elif datos.stock_actual <= 30:
+            cantidad_a_comprar = 30
+        else:
+            cantidad_a_comprar = 10
         confianza_bellman  = 0.0
         origen_politica    = "Política de Contingencia (Estado Desconocido)"
-        explicacion        = "Estado no visto durante el entrenamiento. Se aplica política de contingencia: comprar 10 unidades."
+        nivel_stock        = "crítico" if datos.stock_actual == 0 else "bajo" if datos.stock_actual < 20 else "normal" if datos.stock_actual < 60 else "alto"
+        explicacion        = (
+            f"Estado no visto en entrenamiento. Stock {nivel_stock} ({datos.stock_actual} unidades) "
+            f"un {NOMBRES_DIAS[dia_idx]}: se aplica regla de contingencia, comprar {cantidad_a_comprar} unidades."
+        )
 
     return {
         "status": "success",
         "metadatos": {
             "estrategia_aplicada": origen_politica,
-            "valor_q_maximo": round(confianza_bellman, 4)
+            "valor_q_maximo": round(confianza_bellman, 4),
+            "confianza_pct": confianza_pct if llave_estado in q_table_cargada else 0
         },
         "decision_abastecimiento": {
             "unidades_a_solicitar": cantidad_a_comprar,
