@@ -1,92 +1,218 @@
 import streamlit as st
 import requests
 
+# -----------------------------
+# Configuración de la página
+# -----------------------------
+
 st.set_page_config(
-    page_title="Optimización de Inventario",
-    page_icon="📦",
-    layout="centered"
+    page_title="Sistema Inteligente de Inventarios",
+    page_icon="🤖",
+    layout="wide"
 )
 
-st.title("📦 Sistema de Optimización de Inventarios")
-st.subheader("Selector de Acciones mediante Aprendizaje por Refuerzo (Bellman)")
-st.write("Introduce el estado actual del almacén para consultar la política óptima del agente.")
+# -----------------------------
+# CSS Personalizado
+# -----------------------------
 
-# Formulario de entrada
-with st.form("formulario_inventario"):
-    stock_actual = st.number_input(
-        "Stock Actual en Almacén:",
+st.markdown("""
+<style>
+
+.main{
+    background:linear-gradient(135deg,#eef4ff,#f7fbff);
+}
+
+.block-container{
+    padding-top:2rem;
+}
+
+.titulo{
+    text-align:center;
+    color:#0f172a;
+    font-size:40px;
+    font-weight:700;
+}
+
+.subtitulo{
+    text-align:center;
+    color:#64748b;
+    margin-bottom:35px;
+}
+
+.card{
+
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+}
+
+.estado{
+    font-size:18px;
+    font-weight:bold;
+    margin-top:20px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# Encabezado
+# -----------------------------
+
+st.markdown(
+    "<div class='titulo'>🤖 Sistema Inteligente de Inventarios</div>",
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    "<div class='subtitulo'>Aprendizaje por Refuerzo • Q-Learning • Bellman</div>",
+    unsafe_allow_html=True
+)
+
+# -----------------------------
+# Columnas
+# -----------------------------
+
+col1,col2=st.columns([1,1.4])
+
+# =====================================================
+# COLUMNA IZQUIERDA
+# =====================================================
+
+with col1:
+
+    st.subheader("📥 Parámetros")
+
+    stock=st.number_input(
+        "Stock actual",
         min_value=0,
-        max_value=200,
-        value=30,
-        step=1
+        value=30
     )
 
-    dia_semana = st.selectbox(
-        "Día de la Semana:",
+    dia=st.selectbox(
+
+        "Día de la semana",
+
         [
-            "Lunes",
-            "Martes",
-            "Miércoles",
-            "Jueves",
-            "Viernes",
-            "Sábado",
-            "Domingo"
+
+            "lunes",
+            "martes",
+            "miercoles",
+            "jueves",
+            "viernes",
+            "sabado",
+            "domingo"
+
         ]
+
     )
 
-    boton_consultar = st.form_submit_button("Consultar Agente Inteligente")
-
-# Procesar la petición
-if boton_consultar:
-
-    # Normalizar el día de la semana
-    dia_normalizado = (
-        dia_semana.lower()
-        .replace("miércoles", "miercoles")
-        .replace("sábado", "sabado")
+    analizar=st.button(
+        "🚀 Analizar Inventario",
+        use_container_width=True
     )
 
-    payload = {
-        "stock_actual": int(stock_actual),
-        "dia_semana": dia_normalizado
-    }
+# =====================================================
+# COLUMNA DERECHA
+# =====================================================
 
-    try:
-        respuesta = requests.post(
-            "http://127.0.0.1:8000/prediccion",
-            json=payload
-        )
+with col2:
 
-        if respuesta.status_code == 200:
+    st.subheader("📊 Resultados")
 
-            resultado = respuesta.json()
+    if analizar:
 
-            col1, col2 = st.columns(2)
+        with st.spinner("Analizando con el agente inteligente..."):
 
-            with col1:
-                st.metric(
-                    "Recomendación de Compra",
-                    f"{resultado['decision_abastecimiento']['unidades_a_solicitar']} unidades"
+            try:
+
+                respuesta=requests.post(
+
+                    "http://127.0.0.1:8000/prediccion",
+
+                    json={
+
+                        "stock_actual":stock,
+                        "dia_semana":dia
+
+                    }
+
                 )
 
-            with col2:
-                st.metric(
-                    "Valor Q Estimado (Convergencia)",
-                    resultado["metadatos"]["valor_q_maximo"]
-                )
+                if respuesta.status_code==200:
 
-            st.info(
-                f"💡 **Nota del Agente:** {resultado['decision_abastecimiento']['impacto_esperado']}"
-            )
+                    datos=respuesta.json()
 
-        else:
-            st.error(
-                f"Error en la API: {respuesta.status_code} - "
-                f"{respuesta.json().get('detail', 'Desconocido')}"
-            )
+                    unidades=datos["decision_abastecimiento"]["unidades_a_solicitar"]
 
-    except requests.exceptions.ConnectionError:
-        st.error(
-            "❌ No se pudo conectar con la API de FastAPI. "
-            "Asegúrate de que el servidor uvicorn esté corriendo en el puerto 8000."
-        )
+                    valor_q=float(
+                        datos["metadatos"]["valor_q_maximo"]
+                    )
+
+                    impacto=datos["decision_abastecimiento"]["impacto_esperado"]
+
+                    c1,c2=st.columns(2)
+
+                    with c1:
+
+                        st.metric(
+
+                            "📦 Unidades recomendadas",
+
+                            unidades
+
+                        )
+
+                    with c2:
+
+                        st.metric(
+
+                            "📈 Valor Q",
+
+                            f"{valor_q:.4f}"
+
+                        )
+
+                    st.divider()
+
+                    porcentaje=min(stock/100,1.0)
+
+                    st.write("### Nivel de stock")
+
+                    st.progress(porcentaje)
+
+                    if stock>=60:
+
+                        st.success("🟢 Stock alto")
+
+                    elif stock>=25:
+
+                        st.warning("🟡 Stock normal")
+
+                    elif stock>0:
+
+                        st.error("🔴 Stock bajo")
+
+                    else:
+
+                        st.error("🚨 Sin stock")
+
+                    st.divider()
+
+                    st.info(impacto)
+
+                else:
+
+                    st.error("La API devolvió un error.")
+
+            except Exception as e:
+
+                st.error(f"No fue posible conectar con la API.\n\n{e}")
+
+st.divider()
+
+st.caption(
+    "Sistema desarrollado con FastAPI + Streamlit + Q-Learning + Bellman"
+)
