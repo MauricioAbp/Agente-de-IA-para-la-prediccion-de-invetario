@@ -50,13 +50,276 @@ class PeticionInventario(BaseModel):
     dia_semana: str
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def inicio():
-    return {
-        "mensaje": "API del Sistema Inteligente de Inventarios",
-        "estado": "Activa",
-        "documentacion": "/docs"
-    }
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API - Sistema Inteligente de Inventarios</title>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Material+Icons&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --primary: #6750A4;
+                --primary-container: #EADDFF;
+                --on-primary: #ffffff;
+                --background: #F3F0F7;
+                --surface: #ffffff;
+                --outline: #79747E;
+                --text-primary: #1C1B1F;
+                --text-secondary: #49454F;
+            }
+
+            body {
+                font-family: 'Roboto', sans-serif;
+                background-color: var(--background);
+                color: var(--text-primary);
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            /* Top App Bar */
+            .app-bar {
+                background-color: var(--primary);
+                color: var(--on-primary);
+                padding: 16px 24px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .app-bar h1 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 500;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 0 16px;
+                flex-grow: 1;
+            }
+
+            /* Hero Header */
+            .hero {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .hero h2 {
+                font-size: 32px;
+                font-weight: 700;
+                margin: 0 0 8px 0;
+                color: var(--primary);
+            }
+
+            .hero p {
+                font-size: 16px;
+                color: var(--text-secondary);
+                margin: 0;
+            }
+
+            /* Material Card */
+            .card {
+                background-color: var(--surface);
+                border-radius: 16px;
+                padding: 24px;
+                margin-bottom: 24px;
+                box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.05);
+                border: 1px solid #E7E0EC;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+
+            .card-header .icon {
+                color: var(--primary);
+                font-size: 28px;
+            }
+
+            .card-header h3 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 500;
+            }
+
+            /* Badge/Chip */
+            .badge {
+                background-color: #E8F5E9;
+                color: #2E7D32;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .badge .dot {
+                width: 8px;
+                height: 8px;
+                background-color: #2E7D32;
+                border-radius: 50%;
+                display: inline-block;
+                animation: pulse 1.5s infinite;
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(0.9); opacity: 0.6; }
+                50% { transform: scale(1.2); opacity: 1; }
+                100% { transform: scale(0.9); opacity: 0.6; }
+            }
+
+            /* Buttons */
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background-color: var(--primary);
+                color: var(--on-primary);
+                padding: 12px 24px;
+                border-radius: 100px;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 14px;
+                box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15);
+                transition: all 0.2s;
+            }
+
+            .btn:hover {
+                background-color: #513B8C;
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+                transform: translateY(-1px);
+            }
+
+            /* Tables/Lists */
+            .info-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 12px;
+            }
+
+            .info-table td {
+                padding: 8px 0;
+                border-bottom: 1px solid #E7E0EC;
+                font-size: 14px;
+            }
+
+            .info-table td.label {
+                font-weight: 500;
+                color: var(--text-secondary);
+                width: 30%;
+            }
+
+            /* Footer */
+            footer {
+                background-color: #ECE6F0;
+                padding: 24px;
+                text-align: center;
+                font-size: 12px;
+                color: var(--text-secondary);
+                border-top: 1px solid #E7E0EC;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="app-bar">
+            <span class="material-icons">smart_toy</span>
+            <h1>Sistema Inteligente de Inventarios</h1>
+        </div>
+
+        <div class="container">
+            <div class="hero">
+                <h2>Módulo de Inferencia REST</h2>
+                <p>Motor de Aprendizaje por Refuerzo para Toma de Decisiones Secuenciales</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="material-icons icon">wifi_tethering</span>
+                    <h3>Estado del Servidor</h3>
+                </div>
+                <div class="badge">
+                    <span class="dot"></span>
+                    API Activa y Operacional
+                </div>
+                <table class="info-table">
+                    <tr>
+                        <td class="label">Versión</td>
+                        <td>2.0.0</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Plataforma</td>
+                        <td>FastAPI + Uvicorn</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Algoritmo</td>
+                        <td>Q-Learning (Ecuación de Bellman)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="material-icons icon">api</span>
+                    <h3>Documentación Interactiva</h3>
+                </div>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">
+                    Explore y pruebe de forma interactiva los endpoints de inferencia del agente utilizando la interfaz automática Swagger UI de OpenAPI.
+                </p>
+                <a href="/docs" class="btn">
+                    <span class="material-icons">rocket_launch</span>
+                    Acceder a Swagger UI
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="material-icons icon">psychology</span>
+                    <h3>Especificación del Agente</h3>
+                </div>
+                <table class="info-table">
+                    <tr>
+                        <td class="label">Estado (S)</td>
+                        <td>Tupla: [Stock Actual, Día de la Semana]</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Acciones (A)</td>
+                        <td>Lotes de reabastecimiento: [0, 10, 20, 30, 50] unidades</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Estrategia</td>
+                        <td>&epsilon;-Greedy decreciente con actualización de Bellman</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            Microservicio de Abastecimiento Logístico Autónomo. Desarrollado con FastAPI, Python y Numpy.
+        </footer>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 
 @app.post("/prediccion", status_code=status.HTTP_200_OK)
